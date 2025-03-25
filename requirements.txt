@@ -43,6 +43,7 @@ httpx==0.28.1
 httpx-sse==0.4.0
 huggingface-hub==0.29.3
 idna==3.10
+iniconfig==2.1.0
 ipykernel==6.29.5
 ipython==9.0.2
 ipython_pygments_lexers==1.1.1
@@ -102,6 +103,7 @@ pandocfilters==1.5.1
 parso==0.8.4
 pexpect==4.9.0
 platformdirs==4.3.7
+pluggy==1.5.0
 prometheus_client==0.21.1
 prompt_toolkit==3.0.50
 propcache==0.3.0
@@ -114,6 +116,8 @@ pydantic==2.10.6
 pydantic-settings==2.8.1
 pydantic_core==2.27.2
 Pygments==2.19.1
+pytest==8.3.5
+pytest-asyncio==0.26.0
 python-dateutil==2.9.0.post0
 python-decouple==3.8
 python-dotenv==1.0.1
