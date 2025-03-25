@@ -12,10 +12,10 @@ class QueryResponse(BaseModel):
     
     
 @app.post("/query", response_model=QueryResponse)
-def handle_query(request: QueryRequest):
-    answer = graph.invoke(input={"question": request.question}, config={"thread_id": "123"})
+async def handle_query(request: QueryRequest):
+    answer = await graph.ainvoke(input={"question": request.question}, config={"thread_id": "123"})
     return QueryResponse(answer=answer["answer"])
 
 @app.get("/")
-def read_root():
+async def read_root():
     return {"Welcome Speech": "Ahem!! Welcome to the School Rag System🥸"}

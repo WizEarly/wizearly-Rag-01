@@ -8,10 +8,10 @@ from langchain_core.messages import SystemMessage
 from AgenticWorkflow.utils.schemas import QueryFormulationSchema
 from langchain_core.output_parsers.string import StrOutputParser
 
-def query_permission_node(state: InputState) -> State:
+async def query_permission_node(state: InputState) -> State:
     return {"permitted": True}
 
-def query_relevant_node(state: State):
+async def query_relevant_node(state: State):
     system = """You are an assistant that determines whether a given question is related to the following {dialect} database schema.
     Get the table names that are related to the question from the tool ListSQLDatabaseTool
     Then get the schema for the table names from the tool InfoSQLDatabaseTool
@@ -28,14 +28,14 @@ def query_relevant_node(state: State):
         return {"relevant": True} 
     return {"relevant": False}
 
-def query_decision_node(state: State):
+async def query_decision_node(state: State):
     """A decision node to decide if a user input is permitted or not."""
     decision = state['permitted'] and state['relevant']
     if decision:
         return {"decision": "input permitted"}
     return {"decision": "input not permitted"}
 
-def sql_query_formulation_node(state: State):
+async def sql_query_formulation_node(state: State):
     if state.get("sql_error"):
         system = """You are an assistant that converts natural language questions into SQL queries based on the following schema:
         Get the table names that are related to the question from the tool ListSQLDatabaseTool
@@ -77,19 +77,19 @@ def sql_query_formulation_node(state: State):
         
     return {"sql_query": qf_invoke["messages"][-1].content}
 
-def sql_query_node(state: State):
+async def sql_query_node(state: State):
     try:
         answer = db.run(state['sql_query'])
         return {"raw_answer": answer, "sql_error": ""}  # Clear previous errors if successful
     except Exception as e:
         return {"sql_error": str(e)}
     
-def route_sql_error(state: State):
+async def route_sql_error(state: State):
     if state.get("sql_error"):
         return "sql_query_formulation_node"  # Retry query formulation if there's an error
     return "query_answer_node"
 
-def query_answer_node(state: State) -> OutputState:
+async def query_answer_node(state: State) -> OutputState:
     prompt = """
     You are an assistant that converts answers from an sql query to a natural language answer while also using the user question:
     The question is {question}
@@ -99,19 +99,19 @@ def query_answer_node(state: State) -> OutputState:
     """
     prompt_template = PromptTemplate.from_template(prompt)
     chain = prompt_template | llm | StrOutputParser()
-    answer = chain.invoke({
+    answer = await chain.ainvoke({
         "question": state['question'],
         "answer": state["raw_answer"]
     })
 
     return {"answer": answer}
 
-def route_decision(state: State):
+async def route_decision(state: State):
     print(state['decision'])
     if state['decision'] == "input permitted":
         return "sql_query_formulation_node"
     else:
         return "end"
     
-def update_output(state: State):
+async def update_output(state: State):
     return {"output": "Your question is not relevant or not permitted."}
